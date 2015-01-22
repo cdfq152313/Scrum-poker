@@ -3,7 +3,7 @@ from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 
-class Card(QTextEdit):
+class Card(QLabel):
     def __init__(self, title, parent):
         super(Card, self).__init__("fibo\n" + title, parent)
         palette1 = QPalette(self)
@@ -12,7 +12,7 @@ class Card(QTextEdit):
         self.setAutoFillBackground(True)
         self.setPalette(palette1)
         self.setAcceptDrops(True)
-        self.setReadOnly(True)
+        #self.setReadOnly(True)
 
     def dragEnterEvent(self, e):
         if e.mimeData().hasFormat('text/plain'):
@@ -25,29 +25,46 @@ class Card(QTextEdit):
         display = fibo + e.mimeData().text()
         self.setText(display)
 
+class CardScreen(QWidget):
+    x_max = 6
+    y_max = 4
+    card_max = x_max * y_max
+    card_count = 0
+    def __init__(self, parent=None):
+        super(CardScreen, self).__init__(parent)
+        self.layout = QGridLayout()
+
+        self.new_card("hello world")
+        while self.card_count < self.card_max:
+            self.new_card("compiler作業")
+
+        self.setLayout(self.layout)
+
+    def new_card(self, content):
+        aCard = Card(content, self)
+        (x,y) = self.__card_position(self.card_count)
+        self.layout.addWidget(aCard, y,x)
+        self.card_count += 1
+
+    def __card_position(self, index):
+        return ( index%self.x_max , index/self.x_max )
+
 class Form(QWidget):
     x_max = 640
     y_max = 480
-    card_x_max = 6
-    card_y_max = 4
-    card_max = card_x_max * card_y_max
-    card_count = 0
 
     def __init__(self, parent=None):
         super(Form, self).__init__(parent)
 
         mainLayout = QGridLayout()
         mainLayout.addLayout(self.__input_init(), 1, 0)
-        self.display_layout = self.__display_init()
-        mainLayout.addLayout(self.display_layout, 0, 0)
-
-        self.new_card("hello world")
-        while self.card_count < self.card_max:
-            self.new_card("compiler作業")
+        self.display = CardScreen(parent=self)
+        mainLayout.addWidget(self.display, 0, 0)
 
         self.setLayout(mainLayout)
         self.setWindowTitle("Fibonacci Card")
-        self.resize(640,480)
+        self.resize(self.x_max, self.y_max)
+
     def __input_init(self):
         input_layout = QHBoxLayout()
 
@@ -58,23 +75,10 @@ class Form(QWidget):
         input_layout.addWidget(submitButton)
         submitButton.clicked.connect(self.submitContact)
         return input_layout
-
-    def __display_init(self):
-        display_layout = QGridLayout()
-        return display_layout
-
-    def new_card(self, content):
-        aCard = Card(content, self)
-        (x,y) = self.__card_position(self.card_count)
-        self.display_layout.addWidget(aCard, y,x)
-        self.card_count += 1
-
-    def __card_position(self, index):
-        return ( index%self.card_x_max , index/self.card_x_max )
-    
+  
     def submitContact(self):
         input_data = self.input_line.text()
-        self.new_card(input_data)
+        self.display.new_card(input_data)
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
