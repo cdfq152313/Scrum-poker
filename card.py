@@ -1,30 +1,44 @@
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 
-class Card(QLabel):
-    prefix = "fibo\n"
-    def __init__(self, index,parent):
-        super(Card, self).__init__(self.prefix, parent)
-        self.register_screen(parent)
-        self.index = index
+class CardHeader(QWidget):
+    fibo = []
+    def __init__(self, fibo_number,parent):
+        super(CardHeader, self).__init__(parent)
+        self.layout = QHBoxLayout()
+        self.setLayout(self.layout)
+        self.__init_background()
+        self.__init_widgets(fibo_number)
+
+    def __init_background(self):
+        palette1 = QPalette(self)
+        palette1.setBrush(self.backgroundRole(), QBrush( QPixmap('./background/bg3.gif')))
+        self.setAutoFillBackground(True)
+        self.setPalette(palette1)
+
+    def __init_widgets(self, fibo_number):
+        self.text = QLabel()
+        self.text.setText( str(fibo_number) )
+        self.layout.addWidget(self.text, 0)
+
+class CardContent(QLabel):
+    def __init__(self, parent):
+        super(CardContent, self).__init__(parent)
+        self.parent = parent
         self.content = "" 
         palette1 = QPalette(self)
-        # palette1.setColor(self.backgroundRole(), Qt.red  ) 
         palette1.setBrush(self.backgroundRole(), QBrush( QPixmap('./background/bg2.gif')))
-        # background = QPixmap("./poker/1.gif").scaled( Qsize(100,40) );
-        # palette1.setBrush(self.backgroundRole(), QBrush(background) ) 
         self.setAutoFillBackground(True)
         self.setPalette(palette1)
         self.setAcceptDrops(True)
-        #self.setReadOnly(True)
 
-    def set_content(self, content):
+    def setText(self, content):
+        super(CardContent, self).setText(content)
         self.content = content
-        self.setText(self.prefix + content)
-    def register_screen(self, screen):
-        self.screen=screen
-    def notify_screen(self):
-        self.screen.card_shift(self.index)
+
+    def notify_card(self):
+        self.parent.notify_screen()
+
     def dragEnterEvent(self, e):
         if e.mimeData().hasFormat('text/plain'):
             e.accept()
@@ -32,8 +46,34 @@ class Card(QLabel):
             e.ignore()
 
     def dropEvent(self, e):
-        self.notify_screen()
-        self.set_content( e.mimeData().text() )
+        self.notify_card()
+        self.setText( e.mimeData().text() )
+
+class Card(QLabel):
+    def __init__(self, index,parent):
+        super(Card, self).__init__(parent)
+        self.register_screen(parent)
+        self.index = index
+
+        self.layout = QVBoxLayout()
+        self.setLayout(self.layout)
+        self.__init_widgets()
+
+    def __init_widgets(self):
+        self.hearder = CardHeader(self.index, self)
+        self.content = CardContent(self)
+        self.layout.addWidget(self.hearder, 0)
+        self.layout.addWidget(self.content, 1)
+
+    def set_content(self, content):
+        self.content.setText(content)
+    def get_content(self):
+        return self.content.content
+
+    def register_screen(self, screen):
+        self.screen=screen
+    def notify_screen(self):
+        self.screen.card_shift(self.index)
 
 class CardScreen(QWidget):
     x_max = 6
@@ -60,7 +100,7 @@ class CardScreen(QWidget):
     def card_shift(self, index):
         cur = self.card_max-1
         while cur > index:
-            self.card[cur].set_content( self.card[cur-1].content )
+            self.card[cur].set_content( self.card[cur-1].get_content() )
             cur -= 1
 
     def __card_position(self, index):
