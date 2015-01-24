@@ -1,14 +1,21 @@
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 
+
 class CardHeader(QWidget):
     fibo = []
-    def __init__(self, fibo_number,parent):
+    import csv
+    with open('fibo.csv') as csvfile:
+        spamreader = csv.reader(csvfile)
+        for row in spamreader:
+            fibo = row
+
+    def __init__(self, index,parent):
         super(CardHeader, self).__init__(parent)
         self.layout = QHBoxLayout()
         self.setLayout(self.layout)
         self.__init_background()
-        self.__init_widgets(fibo_number)
+        self.__init_widgets(self.fibo[index])
 
     def __init_background(self):
         palette1 = QPalette(self)
@@ -71,8 +78,8 @@ class Card(QLabel):
         self.screen.card_shift(self.index)
 
 class CardScreen(QWidget):
-    x_max = 6
-    y_max = 4
+    x_max = 5
+    y_max = 3
     card_max = x_max * y_max
     card = []
     def __init__(self, parent=None):
