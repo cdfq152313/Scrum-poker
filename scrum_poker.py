@@ -1,8 +1,8 @@
 import sys
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
-from card import *
-
+from card import CardScreen
+from input_ import InputScreen
 
 class Form(QWidget):
     x_max = 640
@@ -11,29 +11,22 @@ class Form(QWidget):
     def __init__(self, parent=None):
         super(Form, self).__init__(parent)
 
-        mainLayout = QGridLayout()
-        mainLayout.addLayout(self.__input_init(), 1, 0)
-        self.display = CardScreen(parent=self)
-        mainLayout.addWidget(self.display, 0, 0)
+        self.layout = QGridLayout()
+        self.setLayout(self.layout)
 
-        self.setLayout(mainLayout)
+        self.__init_widgets()
+
         self.setWindowTitle("Fibonacci Card")
         self.resize(self.x_max, self.y_max)
+    def __init_widgets(self):
+        self.input_ = InputScreen(parent=self)
+        self.layout.addWidget(self.input_, 1, 0)
 
-    def __input_init(self):
-        input_layout = QHBoxLayout()
+        self.display = CardScreen(parent=self)
+        self.layout.addWidget(self.display, 0, 0)
 
-        self.input_line = QLineEdit("", self)
-        input_layout.addWidget(self.input_line)
-
-        submitButton = QPushButton("Submit", self)
-        input_layout.addWidget(submitButton)
-        submitButton.clicked.connect(self.submitContact)
-        return input_layout
-  
-    def submitContact(self):
-        input_data = self.input_line.text()
-        self.display.new_card(input_data)
+    def enter_input(self, text):
+        self.display.new_card(text)
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)

@@ -97,6 +97,10 @@ class CardScreen(QWidget):
         self.layout.addWidget(aCard, y,x)
         self.card.append(aCard)
 
+    def new_card(self, text):
+        self.card_shift(0)
+        self.card[0].set_content(text)
+
     def card_shift(self, index):
         cur = self.card_max-1
         while cur > index:
