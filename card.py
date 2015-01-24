@@ -25,16 +25,11 @@ class CardContent(QLabel):
     def __init__(self, parent):
         super(CardContent, self).__init__(parent)
         self.parent = parent
-        self.content = "" 
         palette1 = QPalette(self)
         palette1.setBrush(self.backgroundRole(), QBrush( QPixmap('./background/bg2.gif')))
         self.setAutoFillBackground(True)
         self.setPalette(palette1)
         self.setAcceptDrops(True)
-
-    def setText(self, content):
-        super(CardContent, self).setText(content)
-        self.content = content
 
     def notify_card(self):
         self.parent.notify_screen()
@@ -68,7 +63,7 @@ class Card(QLabel):
     def set_content(self, content):
         self.content.setText(content)
     def get_content(self):
-        return self.content.content
+        return self.content.text()
 
     def register_screen(self, screen):
         self.screen=screen
