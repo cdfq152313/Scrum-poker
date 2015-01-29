@@ -1,6 +1,6 @@
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
-
+from PyQt5.QtCore import *
 
 class CardHeader(QWidget):
     fibo = []
@@ -51,6 +51,26 @@ class CardContent(QLabel):
         self.notify_card()
         self.setText( e.mimeData().text() )
 
+    def mouseMoveEvent(self, e):
+        if e.buttons() and Qt.LeftButton:
+            distance = (e.pos() - self.startPos).manhattanLength()
+            if distance >= QApplication.startDragDistance():
+                self.performDrag()
+
+    def mousePressEvent(self, e):
+        if e.button() == Qt.LeftButton:
+            self.startPos = e.pos()
+        super(CardContent, self).mousePressEvent(e)
+
+    def performDrag(self):
+        mimeData = QMimeData()
+        mimeData.setText(self.text())
+
+        drag = QDrag(self)
+        drag.setMimeData(mimeData)
+        if drag.exec_(Qt.MoveAction) == Qt.MoveAction:
+            pass
+        
 class Card(QLabel):
     def __init__(self, index,parent):
         super(Card, self).__init__(parent)
