@@ -38,8 +38,10 @@ class CardContent(QLabel):
         self.setPalette(palette1)
         self.setAcceptDrops(True)
 
-    def notify_card(self):
-        self.parent.notify_screen()
+    def notify_card_shift(self):
+        self.parent.notify_screen_shift(None)
+    def notify_card_shift(self, drop_index):
+        self.parent.notify_screen_shift(drop_index)
 
     def dragEnterEvent(self, e):
         if e.mimeData().hasFormat('text/plain'):
@@ -48,7 +50,10 @@ class CardContent(QLabel):
             e.ignore()
 
     def dropEvent(self, e):
-        self.notify_card()
+        if e.mimeData().hasHtml():
+            self.notify_card_shift( int(e.mimeData().html()) )
+        else:
+            self.notify_card_shift()
         self.setText( e.mimeData().text() )
 
     def mouseMoveEvent(self, e):
@@ -65,7 +70,7 @@ class CardContent(QLabel):
     def performDrag(self):
         mimeData = QMimeData()
         mimeData.setText(self.text())
-
+        mimeData.setHtml(str(self.parent.index))
         drag = QDrag(self)
         drag.setMimeData(mimeData)
         if drag.exec_(Qt.MoveAction) == Qt.MoveAction:
@@ -94,8 +99,8 @@ class Card(QLabel):
 
     def register_screen(self, screen):
         self.screen=screen
-    def notify_screen(self):
-        self.screen.card_shift(self.index)
+    def notify_screen_shift(self, drag_index):
+        self.screen.card_shift(drag_index, self.index)
 
 class CardScreen(QWidget):
     x_max = 5
@@ -120,14 +125,23 @@ class CardScreen(QWidget):
         self.card.append(aCard)
 
     def new_card(self, text):
-        self.card_shift(0)
+        self.card_shift(None, 0)
         self.card[0].set_content(text)
 
-    def card_shift(self, index):
-        cur = self.card_max-1
-        while cur > index:
-            self.card[cur].set_content( self.card[cur-1].get_content() )
-            cur -= 1
+    def card_shift(self, drag_index, drop_index):
+        if drag_index is None:
+            drag_index = self.card_max-1
+        # drag_index in fornt of drop_index
+        if drag_index < drop_index:
+            cur = drag_index
+            while cur < drop_index:
+                self.card[cur].set_content( self.card[cur+1].get_content() )
+                cur += 1
+        elif drag_index > drop_index:
+            cur = drag_index
+            while cur > drop_index:
+                self.card[cur].set_content( self.card[cur-1].get_content() )
+                cur -= 1
 
     def __card_position(self, index):
         return ( index%self.x_max , index/self.x_max )
